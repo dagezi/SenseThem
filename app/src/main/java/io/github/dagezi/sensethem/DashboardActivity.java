@@ -85,8 +85,10 @@ public class DashboardActivity extends AppCompatActivity {
                 this.binding = binding;
             }
 
-            public void populate(Sensor sensor) {
+            public void populate(Sensor sensor, int position) {
                 binding.setSensor(sensor);
+                binding.getRoot().setBackgroundResource(position % 2 == 0 ?
+                        0 : R.color.sensor_list_item_background);
             }
         }
 
@@ -108,7 +110,7 @@ public class DashboardActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
-            holder.populate(sensors.get(position));
+            holder.populate(sensors.get(position), position);
         }
 
         @Override
