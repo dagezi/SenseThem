@@ -1,0 +1,13 @@
+machine:
+  java:
+    version: oraclejdk8
+  environment:
+    ANDROID_HOME: /usr/local/android-sdk-linux
+
+dependencies:
+  cache_directories:
+    - /usr/local/android-sdk-linux/extras
+    - /home/ubuntu/.android
+  pre:
+    - mkdir -p $ANDROID_HOME/licenses
+    - echo "$ANDROID_SDK_LICENSE" > $ANDROID_HOME/licenses/android-sdk-license
