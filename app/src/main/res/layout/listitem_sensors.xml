@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+        <import type="io.github.dagezi.sensethem.SensorTypeStrings"/>
         <variable
             name="sensor"
             type="android.hardware.Sensor" />
@@ -24,13 +25,7 @@
             android:id="@+id/type"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@{String.valueOf(sensor.type)}"
-            />
-        <TextView
-            android:id="@+id/stringType"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@{sensor.stringType}"
+            android:text="@{SensorTypeStrings.getString(sensor.type) + '(' + String.valueOf(sensor.type)+ ')'}"
             />
         <TextView
             android:id="@+id/vendor"
