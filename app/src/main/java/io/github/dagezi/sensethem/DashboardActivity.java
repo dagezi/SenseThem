@@ -1,20 +1,37 @@
 package io.github.dagezi.sensethem;
 
+import android.app.Activity;
+import android.content.Context;
+import android.databinding.DataBindingUtil;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
+
+import java.util.List;
+
+import io.github.dagezi.sensethem.databinding.ActivityDashboardBinding;
+import io.github.dagezi.sensethem.databinding.ListitemSensorsBinding;
 
 public class DashboardActivity extends AppCompatActivity {
+    private SensorManager sensorManager;
+    private ActivityDashboardBinding binding;
+    private SensorsAdaptor sensorsAdaptor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_dashboard);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_dashboard);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -26,6 +43,16 @@ public class DashboardActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        binding.sensorList.setLayoutManager(new LinearLayoutManager(this));
+        enumerateSensors();
+    }
+
+    public void enumerateSensors() {
+        List<Sensor> sensors = sensorManager.getSensorList(Sensor.TYPE_ALL);
+
+        sensorsAdaptor = new SensorsAdaptor(this, sensors);
+        binding.sensorList.setAdapter(sensorsAdaptor);
     }
 
     @Override
@@ -48,5 +75,45 @@ public class DashboardActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private static class SensorsAdaptor extends RecyclerView.Adapter<SensorsAdaptor.ViewHolder> {
+        static class ViewHolder extends RecyclerView.ViewHolder {
+            private final ListitemSensorsBinding binding;
+            public ViewHolder(ListitemSensorsBinding binding) {
+                super(binding.getRoot());
+                this.binding = binding;
+            }
+
+            public void populate(Sensor sensor) {
+                binding.setSensor(sensor);
+            }
+        }
+
+        private List<Sensor> sensors;
+        private final Activity activity;
+
+        public SensorsAdaptor(Activity activity, List<Sensor> sensors) {
+            this.activity = activity;
+            this.sensors = sensors;
+        }
+
+        @Override
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            ListitemSensorsBinding binding = DataBindingUtil.inflate(
+                    LayoutInflater.from(activity), R.layout.listitem_sensors, parent, false);
+
+            return new ViewHolder(binding);
+        }
+
+        @Override
+        public void onBindViewHolder(ViewHolder holder, int position) {
+            holder.populate(sensors.get(position));
+        }
+
+        @Override
+        public int getItemCount() {
+            return sensors.size();
+        }
     }
 }
