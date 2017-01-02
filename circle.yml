@@ -11,3 +11,8 @@ dependencies:
   pre:
     - mkdir -p $ANDROID_HOME/licenses
     - echo "$ANDROID_SDK_LICENSE" > $ANDROID_HOME/licenses/android-sdk-license
+
+general:
+  artifacts:
+    - "app/build/outputs"  # APK, test log and lint log
+    - "app/build/reports"  # instrumentation test report
