@@ -11,10 +11,26 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+    signingConfigs {
+        releaseConfig {
+            storeFile file('release.jks')
+        }
+        debugConfig {
+            storeFile file('debug.jks')
+            storePassword 'dagezi'
+            keyPassword 'dagezi'
+            keyAlias 'debug'
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.releaseConfig
+        }
+        debug {
+            applicationIdSuffix '.debug'
+            signingConfig signingConfigs.debugConfig
         }
     }
     dataBinding {
@@ -30,4 +46,17 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.0.1'
     compile 'com.android.support:design:25.0.1'
     testCompile 'junit:junit:4.12'
+}
+
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+
+if (keystorePropertiesFile.exists()) {
+    def properties = new Properties()
+    properties.load(new FileInputStream(keystorePropertiesFile))
+
+    android.signingConfigs.releaseConfig.storePassword = properties['storePassword']
+    android.signingConfigs.releaseConfig.keyPassword = properties['keyPassword']
+    android.signingConfigs.releaseConfig.keyAlias = properties['keyAlias']
+} else {
+    android.buildTypes.release.signingConfig = null
 }
