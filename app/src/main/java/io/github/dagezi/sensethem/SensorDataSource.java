@@ -1,13 +1,28 @@
 package io.github.dagezi.sensethem;
 
+import android.databinding.BaseObservable;
+import android.databinding.Bindable;
 import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class SensorDataSource extends DataSource {
+public class SensorDataSource extends DataSource implements SensorEventListener {
+    @NonNull
+    private final SensorManager sensorManager;
+
+    @NonNull
     private final Sensor sensor;
+
+    @Nullable
+    private Value latestValue;
+
+    private boolean tracking = false;
 
     private static final Map<Integer, String> STRINGS = new HashMap<>();
 
@@ -41,7 +56,8 @@ public class SensorDataSource extends DataSource {
         STRINGS.put(Sensor.TYPE_TEMPERATURE, "TEMPERATURE");
     }
 
-    public SensorDataSource(Sensor sensor) {
+    public SensorDataSource(@NonNull SensorManager sensorManager, @NonNull Sensor sensor) {
+        this.sensorManager = sensorManager;
         this.sensor = sensor;
     }
 
@@ -68,5 +84,61 @@ public class SensorDataSource extends DataSource {
     @Override
     public String getMisc() {
         return sensor.getVendor();
+    }
+
+    @Override
+    @Nullable
+    public Value getLatestValue() {
+        return latestValue;
+    }
+
+    @Override
+    public String getValueString() {
+        if (latestValue == null) {
+            return "N/A";
+        }
+        StringBuilder builder = new StringBuilder();
+        String delimiter = "";
+        for (int i = 0; i < latestValue.values.length; i++) {
+            builder.append(delimiter).append(latestValue.values[i]);
+            delimiter = ", ";
+        }
+        return builder.toString();
+    }
+
+    @Override
+    public void startTracking() {
+        if (!tracking) {
+            tracking = true;
+            notifyPropertyChanged(BR.tracking);
+            sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+        }
+    }
+
+    @Override
+    public void stopTracking() {
+        if (tracking) {
+            notifyPropertyChanged(BR.tracking);
+            sensorManager.unregisterListener(this);
+            tracking = false;
+        }
+    }
+
+    @Override
+    public boolean isTracking() {
+        return tracking;
+    }
+
+    // SensorEventListener
+    @Override
+    public void onSensorChanged(SensorEvent sensorEvent) {
+        latestValue = new Value(sensorEvent.timestamp, sensorEvent.values);
+        notifyPropertyChanged(BR.latestValue);
+        notifyPropertyChanged(BR.valueString);
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {
+
     }
 }

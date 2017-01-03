@@ -52,7 +52,7 @@ public class DashboardActivity extends AppCompatActivity {
 
     public void enumerateSensors() {
         for (Sensor sensor : sensorManager.getSensorList(Sensor.TYPE_ALL)) {
-            dataSources.add(new SensorDataSource(sensor));
+            dataSources.add(new SensorDataSource(sensorManager, sensor));
         }
 
         dataSourcesAdaptor = new DataSourcesAdaptor(this, dataSources);
@@ -82,7 +82,7 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     private static class DataSourcesAdaptor extends RecyclerView.Adapter<DataSourcesAdaptor.ViewHolder> {
-        static class ViewHolder extends RecyclerView.ViewHolder {
+        static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
             private final ListitemDatasourceBinding binding;
             public ViewHolder(ListitemDatasourceBinding binding) {
                 super(binding.getRoot());
@@ -93,6 +93,17 @@ public class DashboardActivity extends AppCompatActivity {
                 binding.setSource(dataSource);
                 binding.getRoot().setBackgroundResource(position % 2 == 0 ?
                         0 : R.color.sensor_list_item_background);
+                binding.getRoot().setOnClickListener(this);
+            }
+
+            @Override
+            public void onClick(View view) {
+                DataSource source = binding.getSource();
+                if (source.isTracking()) {
+                    source.stopTracking();
+                } else {
+                    source.startTracking();
+                }
             }
         }
 
