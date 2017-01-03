@@ -6,11 +6,9 @@ import android.support.annotation.NonNull;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Constant class
- */
+public class SensorDataSource extends DataSource {
+    private final Sensor sensor;
 
-public class SensorTypeStrings {
     private static final Map<Integer, String> STRINGS = new HashMap<>();
 
     // It's ok to use constant not defined by minSdkLevel (16) because
@@ -43,11 +41,32 @@ public class SensorTypeStrings {
         STRINGS.put(Sensor.TYPE_TEMPERATURE, "TEMPERATURE");
     }
 
+    public SensorDataSource(Sensor sensor) {
+        this.sensor = sensor;
+    }
+
+    @Override
+    public String getName() {
+        return sensor.getName();
+    }
+
+    @Override
+    public int getType() {
+        return sensor.getType();
+    }
+
+    @Override
     @NonNull
-    public static String getString(int type) {
+    public String getTypeString() {
+        int type = sensor.getType();
         if (STRINGS.containsKey(type)) {
-            return STRINGS.get(type);
+            return "Sensor: " + STRINGS.get(type);
         }
-        return "UNKNOWN";
+        return "Sensor: unknown";
+    }
+
+    @Override
+    public String getMisc() {
+        return sensor.getVendor();
     }
 }

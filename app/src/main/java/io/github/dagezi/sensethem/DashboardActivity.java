@@ -18,15 +18,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.github.dagezi.sensethem.databinding.ActivityDashboardBinding;
-import io.github.dagezi.sensethem.databinding.ListitemSensorsBinding;
+import io.github.dagezi.sensethem.databinding.ListitemDatasourceBinding;
 
 public class DashboardActivity extends AppCompatActivity {
     private SensorManager sensorManager;
     private ActivityDashboardBinding binding;
-    private SensorsAdaptor sensorsAdaptor;
+    private DataSourcesAdaptor dataSourcesAdaptor;
+    private List<DataSource> dataSources = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,15 +46,17 @@ public class DashboardActivity extends AppCompatActivity {
             }
         });
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        binding.sensorList.setLayoutManager(new LinearLayoutManager(this));
+        binding.dataSourceList.setLayoutManager(new LinearLayoutManager(this));
         enumerateSensors();
     }
 
     public void enumerateSensors() {
-        List<Sensor> sensors = sensorManager.getSensorList(Sensor.TYPE_ALL);
+        for (Sensor sensor : sensorManager.getSensorList(Sensor.TYPE_ALL)) {
+            dataSources.add(new SensorDataSource(sensor));
+        }
 
-        sensorsAdaptor = new SensorsAdaptor(this, sensors);
-        binding.sensorList.setAdapter(sensorsAdaptor);
+        dataSourcesAdaptor = new DataSourcesAdaptor(this, dataSources);
+        binding.dataSourceList.setAdapter(dataSourcesAdaptor);
     }
 
     @Override
@@ -77,45 +81,45 @@ public class DashboardActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private static class SensorsAdaptor extends RecyclerView.Adapter<SensorsAdaptor.ViewHolder> {
+    private static class DataSourcesAdaptor extends RecyclerView.Adapter<DataSourcesAdaptor.ViewHolder> {
         static class ViewHolder extends RecyclerView.ViewHolder {
-            private final ListitemSensorsBinding binding;
-            public ViewHolder(ListitemSensorsBinding binding) {
+            private final ListitemDatasourceBinding binding;
+            public ViewHolder(ListitemDatasourceBinding binding) {
                 super(binding.getRoot());
                 this.binding = binding;
             }
 
-            public void populate(Sensor sensor, int position) {
-                binding.setSensor(sensor);
+            public void populate(DataSource dataSource, int position) {
+                binding.setSource(dataSource);
                 binding.getRoot().setBackgroundResource(position % 2 == 0 ?
                         0 : R.color.sensor_list_item_background);
             }
         }
 
-        private List<Sensor> sensors;
+        private List<DataSource> dataSources;
         private final Activity activity;
 
-        public SensorsAdaptor(Activity activity, List<Sensor> sensors) {
+        public DataSourcesAdaptor(Activity activity, List<DataSource> dataSources) {
             this.activity = activity;
-            this.sensors = sensors;
+            this.dataSources = dataSources;
         }
 
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            ListitemSensorsBinding binding = DataBindingUtil.inflate(
-                    LayoutInflater.from(activity), R.layout.listitem_sensors, parent, false);
+            ListitemDatasourceBinding binding = DataBindingUtil.inflate(
+                    LayoutInflater.from(activity), R.layout.listitem_datasource, parent, false);
 
             return new ViewHolder(binding);
         }
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
-            holder.populate(sensors.get(position), position);
+            holder.populate(dataSources.get(position), position);
         }
 
         @Override
         public int getItemCount() {
-            return sensors.size();
+            return dataSources.size();
         }
     }
 }
